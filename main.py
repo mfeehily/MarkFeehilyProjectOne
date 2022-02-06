@@ -3,54 +3,61 @@
 # COMP 490
 # 2/2/22
 
-from bs4 import BeautifulSoup
-import requests
 import secrets
+import sqlite3
+import sys
+import requests
+
+
+def top_250():
+    url = f"https://imdb-api.com/en/API/Top250TVs/k_12345678"
+    results = requests.get(url)
+    if results.status_code != 200:
+        print(f"Failed to get data {results.status_code}error{results.reason} ")
+        sys.exit(-1)
+    response = results.json()
+    show_list = response["items"]
+    return show_list
+
+
+def get_results(data_to_write: list[dict]):
+    with open("Output.txt", mode='a') as outputFile:  # open the output file for appending
+        for show in data_to_write:
+            print(show, file=outputFile)  # write each data item to file
+            print("\n", file=outputFile)
+            print("===================================================================", file=outputFile)
+
+
+def find_ratings(top_show_data: list[dict]) -> list[dict]:
+    results = []
+    api_queries = []
+    base_query = f"https://imdb-api.com/en/API/UserRatings/{secrets}/tt1375666/"
+    wheel_of_time_query = f"{base_query}tt7462410"
+    api_queries.append(wheel_of_time_query)
+    first_query = f"{base_query}{top_show_data[1]['id']}"
+    api_queries.append(first_query)
+    fifty_query = f"{base_query}{top_show_data[49]['id']}"
+    api_queries.append(fifty_query)
+    hundred_query = f"{base_query}{top_show_data[99]['id']}"
+    api_queries.append(hundred_query)
+    two_hundred = f"{base_query}{top_show_data[199]['id']}"
+    api_queries.append(two_hundred)
+    for query in api_queries:
+        response = requests.get(query)
+        if response.status_code != 200:
+            print(f"Failed to get data, response code:{response.status_code} and error message: {response.reason} ")
+            continue
+        rating_data = response.json()
+        results.append(rating_data)
+    return results
 
 
 def main():
-    url = f"https://imdb-api.com/en/API/UserRatings/{secrets}/tt1375666"
-    results = requests.get(url)
-    soup = BeautifulSoup(results.content, 'lxml')
+    top_show_data = top_250()
+    ratings_data = find_ratings(top_show_data)
+    get_results(ratings_data)
+    get_results(top_show_data)
 
-    # created Lists that hold movie data
-    title = []
-    year = []
-    director = []
-    rating = []
 
-    tables = soup.body.find("tbody", {"class": "lister-list"})
-    # finds the title, year, and director of movie
-    titles = tables.find_all("td", {"class": "titleColumn"})
-    for x in titles:
-        # appends the titles
-        title.append(x.a.get_text())
-        # finds the years of the movies
-        years = x.find("span", {"class": "secondaryInfo"}).get_text()
-        year.append(years[1:-1])
-        # finds the director of the movies
-        directors = x.a['title'].split("(dir.)")
-        director.append(directors[0])
-    # add rating to each movie
-    rating1 = tables.find_all("td", {"class": "imdbRating"})
-
-    for x in rating1:
-        rating.append(x.get_text().strip())
-    # Printing the data to the terminal
-    print(title)
-    print(year)
-    print(director)
-    print(rating)
-    print("length = ", len(title))
-    response = (title + year + director + rating)
-    # Writing movie data to a file
-    with open('test.txt', 'w') as file:
-        file.write(response)
-    # when results are not equal to 200 prints "results are not equal to 200"
-    if results.status_code != 200:
-        print("results are not equal to 200")
-        return
-
-    # data = results.json()
-    # file = open("test", "w")
-    # file.write(response)
+if __name__ == '__main__':
+    main()
