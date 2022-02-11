@@ -14,7 +14,7 @@ import pandas as pd
 import csv
 
 
-def setup(cursor: sqlite3.Cursor):
+def setup(cursor: sqlite3.Cursor):  # database setup
     cursor.execute('''CREATE TABLE IF NOT EXISTS headline_data( 
         Id TEXT PRIMARY KEY, 
         Title TEXT NOT NULL,
@@ -50,9 +50,9 @@ def setup(cursor: sqlite3.Cursor):
             FOREIGN KEY (id) REFERENCES headline_data (id)
             ON DELETE CASCADE ON UPDATE NO ACTION);''')
 
-    url = f"https://imdb-api.com/en/API/Top250TVs/{secrets}"
+    url = f"https://imdb-api.com/en/API/Top250TVs/{secrets}"  # assign API with data to url
     results = requests.get(url)
-    if results.status_code != 200:
+    if results.status_code != 200:  # if there is not enough data a failed to get data message will appear
         print(f"Failed to get data {results.status_code}error{results.reason} ")
         sys.exit(-1)
 
@@ -60,25 +60,25 @@ def setup(cursor: sqlite3.Cursor):
     show_list = response["items"]
     List_data = show_list[0].keys()
 
-    with open("output.csv", 'w') as f:
+    with open("output.csv", 'w') as f:  # open output file
         writer = csv.DictWriter(f, List_data)
         writer.writeheader()
         writer.writerows(show_list)
         f.close()
 
 
-def open_Data_Base(filename: str) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
+def open_Data_Base(filename: str) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:  # open database
     Data_Base_Connect = sqlite3.connect(filename)
     cursor = Data_Base_Connect.cursor()
     return Data_Base_Connect, cursor
 
 
-def data():
+def data():  # database data
     top_250 = pd.read_csv('Data.csv', encoding="latin-1")
     return top_250
 
 
-def rate():
+def rate():  # database rate
     r_data = pd.read_cvs('Data2.csv', encoding="latin-1")
     return r_data
 
@@ -103,17 +103,17 @@ def headlined_data(cursor: sqlite3.Cursor, connect: sqlite3.Connection):
                                                               Dictionary_data[key][3],
                                                               Dictionary_data[key][4],
                                                               Dictionary_data[key][5]))
-        connect.commit()
+        connect.commit()  # commit the values from dictionary data
 
 
-def close_Data_Base(connection: sqlite3.Connection):
+def close_Data_Base(connection: sqlite3.Connection):  # close database
     connection.commit()
     connection.close()
 
 
 def main():
-    name = 'movies.db'
-    connect, cursor = open_Data_Base(name)
+    name = 'movies.db'  # sets name of database file
+    connect, cursor = open_Data_Base(name)  # adds data to database file
     setup(cursor)
     headlined_data(cursor, connect)
     connect.commit()

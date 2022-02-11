@@ -5,10 +5,9 @@
 
 # Sprint 1
 
-
+import secrets
 import sys
 import requests
-import secrets
 
 
 def get_top_250_data() -> list[dict]:
