@@ -14,12 +14,24 @@ import pandas as pd
 import csv
 
 
+def open_Data_Base(filename: str) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:  # open database
+    Data_Base_Connect = sqlite3.connect(filename)
+    cursor = Data_Base_Connect.cursor()
+    return Data_Base_Connect, cursor
+
+
+def close_Data_Base(connection: sqlite3.Connection):  # close database
+    connection.commit()
+    connection.close()
+
+
 def setup(cursor: sqlite3.Cursor):  # database setup
     cursor.execute('''CREATE TABLE IF NOT EXISTS headline_data( 
         Id TEXT PRIMARY KEY, 
         Title TEXT NOT NULL,
         Director TEXT,
         Year INTEGER NOT NULL,
+        Movies TEXT NOT NULL,
         Rating FLOAT DEFAULT 0,
         Rating_number FLOAT DEFAULT 0);''')
 
@@ -67,12 +79,6 @@ def setup(cursor: sqlite3.Cursor):  # database setup
         f.close()
 
 
-def open_Data_Base(filename: str) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:  # open database
-    Data_Base_Connect = sqlite3.connect(filename)
-    cursor = Data_Base_Connect.cursor()
-    return Data_Base_Connect, cursor
-
-
 def data():  # database data
     top_250 = pd.read_csv('Data.csv', encoding="latin-1")
     return top_250
@@ -81,6 +87,11 @@ def data():  # database data
 def rate():  # database rate
     r_data = pd.read_cvs('Data2.csv', encoding="latin-1")
     return r_data
+
+
+def mostPop():
+    pop_data = pd.read_csv('Data3.csv', encoding="latin-1")
+    return pop_data
 
 
 def headlined_data(cursor: sqlite3.Cursor, connect: sqlite3.Connection):
@@ -92,23 +103,20 @@ def headlined_data(cursor: sqlite3.Cursor, connect: sqlite3.Connection):
                                  top_250.loc[top_250['id'] == item]['fullTitle'].tolist()[0],
                                  top_250.loc[top_250['id'] == item]['director'].tolist()[0],
                                  top_250.loc[top_250['id'] == item]['year'].tolist()[0],
+                                 top_250.loc[top_250['id'] == item]['movies'].tolist()[0],
                                  top_250.loc[top_250['id'] == item]['imDbRating'].tolist()[0],
                                  top_250.loc[top_250['id'] == item]['imDbRatingCount'].tolist()[0])
 
     for key in Dictionary_data.keys():
-        cursor.execute("""INSERT INTO headline_data (id, title, full_title, Director, year, rating, rating_count)
-                                  VALUES (?,?,?,?,?,?,?)""", (key, Dictionary_data[key][0],
-                                                              Dictionary_data[key][1],
-                                                              Dictionary_data[key][2],
-                                                              Dictionary_data[key][3],
-                                                              Dictionary_data[key][4],
-                                                              Dictionary_data[key][5]))
+        cursor.execute("""INSERT INTO headline_data (id, title, full_title, movies, Director, year, rating, rating_count)
+                                  VALUES (?,?,?,?,?,?,?,?)""", (key, Dictionary_data[key][0],
+                                                                Dictionary_data[key][1],
+                                                                Dictionary_data[key][2],
+                                                                Dictionary_data[key][3],
+                                                                Dictionary_data[key][4],
+                                                                Dictionary_data[key][5],
+                                                                Dictionary_data[key][6]))
         connect.commit()  # commit the values from dictionary data
-
-
-def close_Data_Base(connection: sqlite3.Connection):  # close database
-    connection.commit()
-    connection.close()
 
 
 def main():
