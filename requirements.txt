@@ -4,3 +4,6 @@ from typing import Tuple
 import requests
 import pandas as pd
 import csv
+
+requests~=2.27.1
+pandas~=1.4.0
