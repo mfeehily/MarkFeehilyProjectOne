@@ -23,3 +23,12 @@ database file get created with table but i can't get the data imported.
 
 Issues: 
 list index out of range error 
+
+2/20/2022
+Project One - Sprint 3 
+
+Introduction: 
+The aim for sprint 3 was to add more data to the database file that was created in sprint 2.
+
+Issues: 
+List index out of range, due to API used to many times
