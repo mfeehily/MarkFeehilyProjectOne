@@ -1,9 +1,15 @@
+# requirments
 import sqlite3
 import sys
 from typing import Tuple
 import requests
 import pandas as pd
 import csv
+from sqlite3 import IntegrityError
+import pprint
+import tkinter
+from tkinter import ttk
+from tkinter import *
+import matplotlib.pyplot as plot
 
 requests~=2.27.1
-pandas~=1.4.0
